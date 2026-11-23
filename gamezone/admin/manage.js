@@ -151,6 +151,7 @@ function manageLounge(key,root=$('#manager')){
   const row=document.createElement('div');row.className='manageRow';
   const info=key==='passes'?'₹'+item.price+' · '+item.hours+' hr · '+item.validDays+' days · '+item.station:key==='devices'?item.stations+' stations':key==='offers'?'₹'+item.price+' · '+item.days:item.url;
   row.innerHTML='<div><strong>'+esc(item.name)+'</strong><small>'+esc(info)+'</small></div><button>Edit</button>';
+  if(key==='videos'){const preview=youtubeThumbnail(item.video);preview.className='miniCover';row.prepend(preview)}
   row.querySelector('button').onclick=()=>loungeEditor(key,item);
   if(key==='social')for(const step of [-1,1]){
    const b=document.createElement('button');b.textContent=step<0?'Move up':'Move down';b.disabled=index+step<0||index+step>=items.length;

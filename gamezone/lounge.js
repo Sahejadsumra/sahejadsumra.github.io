@@ -80,6 +80,16 @@ function renderLounge(){
  for(const s of social){const a=document.createElement('a');a.href=s.url;a.innerHTML=socialIcon(s.url)+esc(s.name);a.target='_blank';a.rel='noopener noreferrer';follow.lastChild.append(a)}
 }
 
+function youtubeThumbnail(id){
+ const img=document.createElement('img');
+ img.alt='';img.referrerPolicy='no-referrer';
+ const sources=[assetUrl('thumbnails/'+id+'.jpg'),'https://img.youtube.com/vi/'+id+'/hqdefault.jpg',assetUrl('prime-logo.jpg')];
+ let next=1;
+ img.onerror=()=>{if(next<sources.length)img.src=sources[next++]};
+ img.src=sources[0];
+ return img;
+}
+
 function renderSocialHub(){
  document.title='Social Media | Prime Game Zone';
  const channels=settings?.social||[];
@@ -105,7 +115,8 @@ function renderSocialHub(){
   for(const video of videos){
    const link=document.createElement('a');link.className='card';link.href=video.url;
    link.target='_blank';link.rel='noopener noreferrer';
-   link.innerHTML='<img loading="lazy" alt="" src="https://i.ytimg.com/vi/'+encodeURIComponent(video.video)+'/hqdefault.jpg"><div class="cardinfo"><span class="meta">YouTube ↗</span><strong>'+esc(video.name)+'</strong></div>';
+   link.innerHTML='<div class="cardinfo"><span class="meta">YouTube ↗</span><strong>'+esc(video.name)+'</strong></div>';
+   link.prepend(youtubeThumbnail(video.video));
    section.lastElementChild.append(link);
   }
   view.append(section);
