@@ -43,10 +43,19 @@ function manageCategories(){
 function manageGames(){
  const root=$('#manager');root.innerHTML='<div class="manageHeading"><h2>Games</h2><button id="newGame" class="primary">Add game</button></div><div id="gameRows"></div>';
  $('#newGame').onclick=()=>gameEditor(null);
- for(const g of games){
+ for(const [index,g] of games.entries()){
   const row=document.createElement('div');row.className='manageRow';
   row.innerHTML='<img class="miniCover" src="'+esc(cover(g))+'" alt=""><div><strong>'+esc(g.name)+'</strong><small>'+esc(g.platform||'Unassigned')+' · '+esc(playerLabel(g))+(playable(g)?'':' · Hidden from players')+'</small></div><button>Edit game</button>';
-  row.querySelector('button').onclick=()=>gameEditor(g);removeButton(row,'removeGame',g.slug,g.name);$('#gameRows').append(row);
+  row.querySelector('button').onclick=()=>gameEditor(g);
+  for(const step of [-1,1]){
+   const button=document.createElement('button');
+   button.textContent=step<0?'Move up':'Move down';
+   button.setAttribute('aria-label',button.textContent+': '+g.name);
+   button.disabled=index+step<0||index+step>=games.length;
+   button.onclick=()=>saveChange(button,{action:'moveGame',slug:g.slug,step},'Library order saved.');
+   row.append(button);
+  }
+  removeButton(row,'removeGame',g.slug,g.name);$('#gameRows').append(row);
  }
 }
 async function readImage(file){
