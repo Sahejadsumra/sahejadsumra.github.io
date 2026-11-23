@@ -17,6 +17,24 @@ function durationLabel(minutes){
  const h=Math.floor(minutes/60);
  return [h?h+' hr':'',minutes%60?'30 min':''].filter(Boolean).join(' ');
 }
+const socialIcons=[
+ {hosts:['instagram.com'],shape:'<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.6" r=".85" fill="currentColor"/>'},
+ {hosts:['youtube.com','youtu.be'],shape:'<rect x="2" y="5" width="20" height="14" rx="4" fill="currentColor" stroke="none"/><path d="m10 9 5 3-5 3z" fill="var(--icon-cutout,white)" stroke="none"/>'},
+ {hosts:['facebook.com','fb.me'],shape:'<path d="M14 22v-9h3l.6-4H14V7c0-1.2.5-2 2-2h2V2.3c-.8-.2-1.8-.3-3-.3-3.4 0-5 2-5 5v2H7v4h3v9z" fill="currentColor" stroke="none"/>'},
+ {hosts:['x.com','twitter.com'],shape:'<path d="m3 3 14 18h4L7 3zM20 3l-7 8M4 21l7-8"/>'},
+ {hosts:['whatsapp.com','wa.me'],shape:'<path d="m3 21 1.4-5A9 9 0 1 1 8 20z"/><path d="M8 7c-2 2 2 9 7 10l2-2-3-2-1 1c-2-1-3-2-3-3l1-1z" fill="currentColor" stroke="none"/>'},
+ {hosts:['discord.com','discord.gg'],shape:'<path d="m7 5-3 1-2 11 4 2 2-2h8l2 2 4-2-2-11-3-1-1 2H8z"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/>'},
+ {hosts:['t.me','telegram.org'],shape:'<path d="m2 11 20-8-4 18-6-5-3 3v-5l9-8-11 7z" fill="currentColor" stroke="none"/>'},
+ {hosts:['tiktok.com'],shape:'<path d="M14 3v12a4.5 4.5 0 1 1-5-4.5M14 3c.5 3 2.5 5 6 5" stroke-width="3.5"/>'},
+ {hosts:['twitch.tv'],shape:'<path d="M3 3h18v12l-6 5h-4l-3 3v-3H4zM10 7v6m6-6v6"/>'}
+];
+function socialIcon(url){
+ let host='';
+ try{host=new URL(url).hostname}catch{}
+ const brand=socialIcons.find(icon=>icon.hosts.some(domain=>host===domain||host.endsWith('.'+domain)));
+ const shape=brand?.shape||'<path d="m10 14 4-4m-5 1-3 3a3.5 3.5 0 0 0 5 5l3-3m1-3 3-3a3.5 3.5 0 0 0-5-5l-3 3"/>';
+ return '<svg class="socialIcon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+shape+'</svg>';
+}
 function renderLounge(){
  const devices=settings?.devices||[],offers=settings?.offers||[],social=settings?.social||[];
  const rates=$('#rates');
@@ -39,7 +57,7 @@ function renderLounge(){
  }
  const follow=$('#social');follow.replaceChildren();follow.hidden=!social.length;
  if(social.length)follow.innerHTML='<div class="sectionhead"><h2>Follow Prime Game Zone</h2></div><div class="socialLinks"></div>';
- for(const s of social){const a=document.createElement('a');a.href=s.url;a.textContent=s.name;a.target='_blank';a.rel='noopener noreferrer';follow.lastChild.append(a)}
+ for(const s of social){const a=document.createElement('a');a.href=s.url;a.innerHTML=socialIcon(s.url)+esc(s.name);a.target='_blank';a.rel='noopener noreferrer';follow.lastChild.append(a)}
 }
 
 function renderSocialHub(){
@@ -48,17 +66,16 @@ function renderSocialHub(){
  const youtube=channels.find(channel=>{
   try{return /(^|\.)(youtube\.com|youtu\.be)$/.test(new URL(channel.url).hostname)}catch{return false}
  });
- const featured=youtube||channels[0];
- const action=featured
-  ? '<a class="button primary" target="_blank" rel="noopener noreferrer" href="'+esc(featured.url)+'">'+(youtube?'Watch on YouTube':'Visit '+esc(featured.name))+' ↗</a>'
-  : '<a class="button primary" href="#library">Explore the game library</a>';
+ const trailer=games.find(game=>playable(game)&&game.video);
+ const watchUrl=youtube?.url||(trailer?'https://www.youtube.com/watch?v='+encodeURIComponent(trailer.video):'https://www.youtube.com/');
+ const action='<a class="button primary watchYoutube" target="_blank" rel="noopener noreferrer" href="'+esc(watchUrl)+'">'+socialIcon(watchUrl)+'Watch YouTube</a>';
  view.innerHTML='<section class="hubHero"><div><span class="kicker">Prime Game Zone</span><h1>Social <em>hub.</em></h1><p>Find the lounge on your favourite channels.</p>'+action+'</div><img alt="" src="'+esc(assetUrl('prime-logo.jpg'))+'"></section><section class="hubSection"><h2>Follow the lounge</h2><div class="hubChannels"></div></section>';
  const list=view.querySelector('.hubChannels');
  if(!channels.length)list.textContent=settings?'Social links are coming soon.':'Social links are temporarily unavailable.';
  for(const channel of channels){
   const link=document.createElement('a');
   link.href=channel.url;link.target='_blank';link.rel='noopener noreferrer';
-  link.innerHTML='<strong>'+esc(channel.name)+'</strong><span aria-hidden="true">↗</span>';
+  link.innerHTML=socialIcon(channel.url)+'<strong>'+esc(channel.name)+'</strong><span aria-hidden="true">↗</span>';
   list.append(link);
  }
  const trailers=games.filter(game=>playable(game)&&game.video);
