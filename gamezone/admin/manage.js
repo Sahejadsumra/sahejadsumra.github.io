@@ -10,10 +10,10 @@ async function writeLibrary(change){
 }
 function addManagement(){
  view.insertAdjacentHTML('beforeend','<div class="managerNav"><div class="manageTabs"></div><button id="lock">Lock panel</button></div><p id="manageStatus" role="status"></p><section id="manager"></section>');
- for(const [id,label] of [['games','Games'],['categories','Categories'],['devices','Devices & Rates'],['offers','Offers & Passes'],['social','Social links']]){
+ for(const [id,label] of [['games','Games'],['categories','Categories'],['devices','Devices & Rates'],['passes','Passes'],['offers','Offers'],['social','Social links']]){
   const b=document.createElement('button');b.textContent=label;b.setAttribute('aria-pressed',String(managementTab===id));b.onclick=()=>{managementTab=id;admin()};$('.manageTabs').append(b);
  }
- if(['devices','offers','social'].includes(managementTab))manageLounge(managementTab);
+ if(['devices','passes','offers','social'].includes(managementTab))manageLounge(managementTab);
  if(managementTab==='games')manageGames();
  if(managementTab==='categories')manageCategories();
 }
@@ -129,16 +129,17 @@ function removeButton(row,action,id,name){
 }
 const sections={
  devices:{title:'Devices & Rates',item:'device',save:'saveDevice',remove:'removeDevice'},
- offers:{title:'Offers & Passes',item:'offer or pass',save:'saveOffer',remove:'removeOffer'},
+ passes:{title:'Passes',item:'pass',save:'savePass',remove:'removePass'},
+ offers:{title:'Offers',item:'offer',save:'saveOffer',remove:'removeOffer'},
  social:{title:'Social links',item:'social link',save:'saveSocial',remove:'removeSocial'}
 };
 function manageLounge(key){
- const config=sections[key],items=settings[key],root=$('#manager');
+ const config=sections[key],items=settings[key]||[],root=$('#manager');
  root.innerHTML='<div class="manageHeading"><h2>'+config.title+'</h2><button class="primary">Add '+config.item+'</button></div>';
  root.querySelector('button').onclick=()=>loungeEditor(key);
  items.forEach((item,index)=>{
   const row=document.createElement('div');row.className='manageRow';
-  const info=key==='devices'?item.stations+' stations':key==='offers'?'₹'+item.price+' · '+item.days:item.url;
+  const info=key==='passes'?'₹'+item.price+' · '+item.hours+' hr · '+item.validDays+' days · '+item.station:key==='devices'?item.stations+' stations':key==='offers'?'₹'+item.price+' · '+item.days:item.url;
   row.innerHTML='<div><strong>'+esc(item.name)+'</strong><small>'+esc(info)+'</small></div><button>Edit</button>';
   row.querySelector('button').onclick=()=>loungeEditor(key,item);
   if(key==='social')for(const step of [-1,1]){
@@ -157,6 +158,12 @@ function loungeEditor(key,item={}){
   for(const [name,label] of [['weekdayHour','Weekday · 1 hour'],['weekdayHalf','Weekday · 30 minutes'],['weekendHour','Weekend · 1 hour'],['weekendHalf','Weekend · 30 minutes']])
    body+=field(label+' (₹)',name,'number',(name.startsWith('weekday')?'required ':'')+'min="1" step="1"');
   body+='</div><fieldset><legend>Games available on this device</legend>'+games.map(g=>'<label class="check"><input type="checkbox" name="gameSlug" value="'+esc(g.slug)+'" '+(g.devices.includes(item.id)?'checked':'')+'> '+esc(g.name)+'</label>').join('')+'</fieldset>';
+ }else if(key==='passes'){
+  body+=field('Price (₹)','price','number','required min="0" step="0.01"')+
+   field('Included play hours','hours','number','required min="0.01" step="0.01"')+
+   field('Validity in days','validDays','number','required min="1" max="100000" step="1"')+
+   field('Station','station','text','required maxlength="100" list="passStations" placeholder="e.g. All PS5 stations"')+
+   '<datalist id="passStations">'+settings.devices.map(d=>'<option value="'+esc(d.name)+'"></option>').join('')+'</datalist>';
  }else if(key==='social')body+=field('Profile URL','url','url','required placeholder="https://…"');
  else{
   body+=field('Price (₹)','price','number','required min="0" step="0.01"')+field('Included hours (optional)','hours','number','min="0" step="0.5"')+
@@ -172,6 +179,9 @@ function loungeEditor(key,item={}){
    if(key==='devices'){
     for(const n of ['stations','weekdayHour','weekdayHalf','weekendHour','weekendHalf'])change[n]=fields.get(n)===''?null:Number(fields.get(n));
     change.gameSlugs=fields.getAll('gameSlug');
+   }else if(key==='passes'){
+    for(const name of ['price','hours','validDays'])change[name]=Number(fields.get(name));
+    change.station=fields.get('station');
    }else if(key==='social')change.url=fields.get('url');
    else{
     for(const n of ['from','until','days','terms'])change[n]=fields.get(n);

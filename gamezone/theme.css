@@ -19,3 +19,9 @@ nav a.ratesLink{display:inline-flex;background:var(--navy);color:white;border-ra
 .socialLinks a,.hubHero .watchYoutube{display:inline-flex;align-items:center;gap:.6em}
 .hubHero .watchYoutube{--icon-cutout:var(--sun);padding:10px 16px}
 .hubChannels a strong{flex:1}
+
+.passGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:16px}
+.passCard{background:white;border:1px solid var(--line);border-top:4px solid var(--pink);border-radius:12px;padding:20px;overflow-wrap:anywhere}
+.passCard h3{margin:0;font-size:22px}.passPrice{font-size:32px}.passCard dl{margin:12px 0 0}
+.passCard dl div{display:flex;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding:7px 0}
+.passCard dd{margin:0;text-align:right;font-weight:bold}

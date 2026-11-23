@@ -48,8 +48,28 @@ function renderLounge(){
   select.onchange=draw;draw();rates.append(card);
  }
  if(!devices.length)rates.insertAdjacentHTML('beforeend','<p>Ask at the lounge for current device rates.</p>');
+ const passes=settings?.passes||[];
+ const passSection=$('#passes');
+ passSection.innerHTML='<div class="sectionhead"><h2>Lounge passes</h2></div>';
+ if(!passes.length){
+  const message=document.createElement('p');
+  message.textContent=settings?'No passes listed yet. Ask at the lounge for availability.':'Pass information is currently unavailable.';
+  passSection.append(message);
+ }else{
+  const grid=document.createElement('div');grid.className='passGrid';
+  for(const pass of passes){
+   const card=document.createElement('article');card.className='passCard';
+   card.innerHTML='<h3>'+esc(pass.name)+'</h3><strong class="passPrice">₹'+Number(pass.price).toLocaleString('en-IN')+'</strong><dl>'+
+    '<div><dt>Play time</dt><dd>'+esc(pass.hours)+(pass.hours===1?' hour':' hours')+'</dd></div>'+
+    '<div><dt>Validity</dt><dd>'+esc(pass.validDays)+(pass.validDays===1?' day':' days')+'</dd></div>'+
+    '<div><dt>Station</dt><dd>'+esc(pass.station)+'</dd></div></dl>';
+   grid.append(card);
+  }
+  passSection.insertAdjacentHTML('beforeend','<p>Buy your pass at the lounge.</p>');
+  passSection.append(grid);
+ }
  const section=$('#offers');section.replaceChildren();section.hidden=!offers.length;
- if(offers.length)section.innerHTML='<div class="sectionhead"><h2>Offers &amp; passes</h2></div><div class="offerGrid"></div>';
+ if(offers.length)section.innerHTML='<div class="sectionhead"><h2>Offers</h2></div><div class="offerGrid"></div>';
  for(const o of offers){
   const card=document.createElement('article');card.className='rateCard';
   card.innerHTML=(o.image?'<img class="offerArt" src="'+esc(assetUrl(o.image))+'" alt="">':'')+'<h3>'+esc(o.name)+'</h3><strong>₹'+o.price+'</strong>'+(o.hours?' · '+o.hours+' hours':'')+'<p>'+esc([o.days,o.from?'From '+o.from:'',o.until?'Through '+o.until:''].filter(Boolean).join(' · '))+'</p>'+(o.terms?'<p>'+esc(o.terms)+'</p>':'')+'<b>Buy at the lounge</b>';
