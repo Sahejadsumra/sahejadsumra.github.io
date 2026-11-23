@@ -122,7 +122,7 @@ function renderSocialHub(){
   }
   view.append(section);
  }
- const trailers=games.filter(game=>playable(game)&&game.video);
+ const trailers=games.filter(game=>playable(game)&&game.video&&game.video!==game.gameplayPreview);
  if(trailers.length){
   const section=document.createElement('section');section.className='hubSection';
   section.innerHTML='<h2>Game trailers</h2><div class="cards"></div>';
