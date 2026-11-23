@@ -1,4 +1,5 @@
 function playerLabel(game){
+ if(game.players===null)return deviceNames(game);
  const count=game.players??1;
  return count===1?'1 local player':'1–'+count+' local players';
 }
