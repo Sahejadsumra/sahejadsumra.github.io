@@ -41,3 +41,35 @@ function renderLounge(){
  if(social.length)follow.innerHTML='<div class="sectionhead"><h2>Follow Prime Game Zone</h2></div><div class="socialLinks"></div>';
  for(const s of social){const a=document.createElement('a');a.href=s.url;a.textContent=s.name;a.target='_blank';a.rel='noopener noreferrer';follow.lastChild.append(a)}
 }
+
+function renderSocialHub(){
+ document.title='Social Media | Prime Game Zone';
+ const channels=settings?.social||[];
+ const youtube=channels.find(channel=>{
+  try{return /(^|\.)(youtube\.com|youtu\.be)$/.test(new URL(channel.url).hostname)}catch{return false}
+ });
+ const featured=youtube||channels[0];
+ const action=featured
+  ? '<a class="button primary" target="_blank" rel="noopener noreferrer" href="'+esc(featured.url)+'">'+(youtube?'Watch on YouTube':'Visit '+esc(featured.name))+' ↗</a>'
+  : '<a class="button primary" href="#library">Explore the game library</a>';
+ view.innerHTML='<section class="hubHero"><div><span class="kicker">Prime Game Zone</span><h1>Social <em>hub.</em></h1><p>Find the lounge on your favourite channels.</p>'+action+'</div><img alt="" src="'+esc(assetUrl('prime-logo.jpg'))+'"></section><section class="hubSection"><h2>Follow the lounge</h2><div class="hubChannels"></div></section>';
+ const list=view.querySelector('.hubChannels');
+ if(!channels.length)list.textContent=settings?'Social links are coming soon.':'Social links are temporarily unavailable.';
+ for(const channel of channels){
+  const link=document.createElement('a');
+  link.href=channel.url;link.target='_blank';link.rel='noopener noreferrer';
+  link.innerHTML='<strong>'+esc(channel.name)+'</strong><span aria-hidden="true">↗</span>';
+  list.append(link);
+ }
+ const trailers=games.filter(game=>playable(game)&&game.video);
+ if(trailers.length){
+  const section=document.createElement('section');section.className='hubSection';
+  section.innerHTML='<h2>Game trailers</h2><div class="cards"></div>';
+  for(const game of trailers){
+   const link=document.createElement('a');link.href='#game/'+game.slug;link.className='card';
+   link.innerHTML='<img loading="lazy" src="'+esc(cover(game))+'" alt=""><div class="cardinfo"><span class="meta">'+esc(game.platform)+'</span><strong>'+esc(game.name)+'</strong><span>View game &amp; trailer →</span></div>';
+   section.lastElementChild.append(link);
+  }
+  view.append(section);
+ }
+}
