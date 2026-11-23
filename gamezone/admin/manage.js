@@ -10,7 +10,7 @@ async function writeLibrary(change){
 }
 function addManagement(){
  view.insertAdjacentHTML('beforeend','<div class="managerNav"><div class="manageTabs"></div><button id="lock">Lock panel</button></div><p id="manageStatus" role="status"></p><section id="manager"></section>');
- for(const [id,label] of [['games','Games'],['categories','Categories'],['devices','Devices & Rates'],['passes','Passes'],['offers','Offers'],['social','Social links']]){
+ for(const [id,label] of [['games','Games'],['categories','Categories'],['devices','Devices & Rates'],['passes','Passes'],['offers','Offers'],['social','Social media']]){
   const b=document.createElement('button');b.textContent=label;b.setAttribute('aria-pressed',String(managementTab===id));b.onclick=()=>{managementTab=id;admin()};$('.manageTabs').append(b);
  }
  if(['devices','passes','offers','social'].includes(managementTab))manageLounge(managementTab);
@@ -140,10 +140,11 @@ const sections={
  devices:{title:'Devices & Rates',item:'device',save:'saveDevice',remove:'removeDevice'},
  passes:{title:'Passes',item:'pass',save:'savePass',remove:'removePass'},
  offers:{title:'Offers',item:'offer',save:'saveOffer',remove:'removeOffer'},
+ videos:{title:'YouTube videos',item:'YouTube video',save:'saveVideo',remove:'removeVideo'},
  social:{title:'Social links',item:'social link',save:'saveSocial',remove:'removeSocial'}
 };
-function manageLounge(key){
- const config=sections[key],items=settings[key]||[],root=$('#manager');
+function manageLounge(key,root=$('#manager')){
+ const config=sections[key],items=settings[key]||[];
  root.innerHTML='<div class="manageHeading"><h2>'+config.title+'</h2><button class="primary">Add '+config.item+'</button></div>';
  root.querySelector('button').onclick=()=>loungeEditor(key);
  items.forEach((item,index)=>{
@@ -157,12 +158,18 @@ function manageLounge(key){
   }
   removeButton(row,config.remove,item.id,item.name);root.append(row);
  });
+ if(key==='social'){
+  const videos=document.createElement('section');root.append(videos);manageLounge('videos',videos);
+ }
 }
 function loungeEditor(key,item={}){
  const config=sections[key],root=$('#manager');
  const field=(label,name,type='text',attrs='required')=>'<label>'+label+'<input type="'+type+'" name="'+name+'" '+attrs+' value="'+esc(item[name])+'"></label>';
  let body=field(key==='social'?'Platform name':'Name','name');
- if(key==='devices'){
+ if(key==='videos'){
+  body=field('YouTube video link','url','url','required placeholder="https://youtu.be/…"')+
+   field('Video title (optional)','name','text','maxlength="100"');
+ }else if(key==='devices'){
   body+=field('Number of stations','stations','number','required min="1" step="1"')+'<div class="formPair">';
   for(const [name,label] of [['weekdayHour','Weekday · 1 hour'],['weekdayHalf','Weekday · 30 minutes'],['weekendHour','Weekend · 1 hour'],['weekendHalf','Weekend · 30 minutes']])
    body+=field(label+' (₹)',name,'number',(name.startsWith('weekday')?'required ':'')+'min="1" step="1"');
@@ -180,7 +187,7 @@ function loungeEditor(key,item={}){
   '<label>Restrictions or details<textarea name="terms" rows="3" maxlength="2000">'+esc(item.terms)+'</textarea></label><label>Offer image<input name="art" type="file" accept="image/*"></label>'+(item.image?'<img class="miniCover" src="'+esc(assetUrl(item.image))+'" alt="Current offer image">':'');
  }
  root.innerHTML='<form class="manageForm"><h2>'+(item.id?'Edit ':'Add ')+config.item+'</h2>'+body+'<div class="editorActions"><button class="primary">Save</button><button type="button">Cancel</button></div><p role="status"></p></form>';
- const form=root.querySelector('form');form.querySelector('[type=button]').onclick=()=>manageLounge(key);
+ const form=root.querySelector('form');form.querySelector('[type=button]').onclick=()=>manageLounge(key==='videos'?'social':key);
  form.onsubmit=async e=>{
   e.preventDefault();const button=form.querySelector('.primary');button.disabled=true;
   const fields=new FormData(form),change={action:config.save,id:item.id,name:fields.get('name')};
@@ -191,7 +198,7 @@ function loungeEditor(key,item={}){
    }else if(key==='passes'){
     for(const name of ['price','hours','validDays'])change[name]=Number(fields.get(name));
     change.station=fields.get('station');
-   }else if(key==='social')change.url=fields.get('url');
+   }else if(key==='social'||key==='videos')change.url=fields.get('url');
    else{
     for(const n of ['from','until','days','terms'])change[n]=fields.get(n);
     change.price=Number(fields.get('price'));change.hours=Number(fields.get('hours'));

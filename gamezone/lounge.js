@@ -87,7 +87,8 @@ function renderSocialHub(){
   try{return /(^|\.)(youtube\.com|youtu\.be)$/.test(new URL(channel.url).hostname)}catch{return false}
  });
  const trailer=games.find(game=>playable(game)&&game.video);
- const watchUrl=youtube?.url||(trailer?'https://www.youtube.com/watch?v='+encodeURIComponent(trailer.video):'https://www.youtube.com/');
+ const videos=settings?.videos||[];
+ const watchUrl=youtube?.url||videos[0]?.url||(trailer?'https://www.youtube.com/watch?v='+encodeURIComponent(trailer.video):'https://www.youtube.com/');
  const action='<a class="button primary watchYoutube" target="_blank" rel="noopener noreferrer" href="'+esc(watchUrl)+'">'+socialIcon(watchUrl)+'Watch YouTube</a>';
  view.innerHTML='<section class="hubHero"><div><span class="kicker">Prime Game Zone</span><h1>Social <em>hub.</em></h1><p>Find the lounge on your favourite channels.</p>'+action+'</div><img alt="" src="'+esc(assetUrl('prime-logo.jpg'))+'"></section><section class="hubSection"><h2>Follow the lounge</h2><div class="hubChannels"></div></section>';
  const list=view.querySelector('.hubChannels');
@@ -97,6 +98,17 @@ function renderSocialHub(){
   link.href=channel.url;link.target='_blank';link.rel='noopener noreferrer';
   link.innerHTML=socialIcon(channel.url)+'<strong>'+esc(channel.name)+'</strong><span aria-hidden="true">↗</span>';
   list.append(link);
+ }
+ if(videos.length){
+  const section=document.createElement('section');section.className='hubSection';
+  section.innerHTML='<h2>YouTube videos</h2><div class="cards"></div>';
+  for(const video of videos){
+   const link=document.createElement('a');link.className='card';link.href=video.url;
+   link.target='_blank';link.rel='noopener noreferrer';
+   link.innerHTML='<img loading="lazy" alt="" src="https://i.ytimg.com/vi/'+encodeURIComponent(video.video)+'/hqdefault.jpg"><div class="cardinfo"><span class="meta">YouTube ↗</span><strong>'+esc(video.name)+'</strong></div>';
+   section.lastElementChild.append(link);
+  }
+  view.append(section);
  }
  const trailers=games.filter(game=>playable(game)&&game.video);
  if(trailers.length){
