@@ -1,0 +1,5 @@
+#workspace{padding-bottom:24px}#entry{max-width:860px}#entry button,#unlockAccount button{margin-top:12px}#notice{color:#75215c}#sessions{overflow-x:auto}#sessions table{width:100%;border-collapse:collapse;background:white}#sessions th,#sessions td{text-align:left;padding:10px;border-bottom:1px solid var(--line)}.moneyGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px;margin:18px 0}.moneyGrid article{background:var(--navy);color:white;border-radius:12px;padding:16px}.moneyGrid strong{display:block;font-size:24px}.manageTabs [aria-pressed=true]{background:var(--navy);color:white}#report li{margin:.4em 0}
+
+#entry .flipTime{grid-column:1/-1;min-width:0;border:0;margin:0;padding:0}
+
+#passEntry{max-width:860px}#passEntry .flipTime{min-width:0;border:0;padding:0;margin:12px 0}#passList li{margin:.5em 0}
