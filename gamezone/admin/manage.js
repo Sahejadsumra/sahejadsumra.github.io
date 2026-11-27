@@ -10,10 +10,24 @@ async function writeLibrary(change){
 }
 function addManagement(){
  view.insertAdjacentHTML('beforeend','<div class="managerNav"><div class="manageTabs"></div><button id="lock">Lock panel</button></div><p id="manageStatus" role="status"></p><section id="manager"></section>');
- for(const [id,label] of [['games','Games'],['categories','Categories'],['devices','Devices & Rates'],['passes','Passes'],['offers','Offers'],['social','Social media']]){
+ for(const [id,label] of [['games','Games'],['bookings','Bookings'],['accounting','Accounting'],['categories','Categories'],['devices','Devices & Rates'],['passes','Passes'],['offers','Offers'],['social','Social media']]){
   const b=document.createElement('button');b.textContent=label;b.setAttribute('aria-pressed',String(managementTab===id));b.onclick=()=>{managementTab=id;admin()};$('.manageTabs').append(b);
  }
  if(['devices','passes','offers','social'].includes(managementTab))manageLounge(managementTab);
+ if(managementTab==='accounting'){
+  const root=$('#manager');
+  root.innerHTML='<h2>Accounting access</h2><form class="manageForm"><label>New accounting password<input name="password" type="password" autocomplete="new-password" required maxlength="1024"></label><button class="primary">Save password</button></form><a class="back" href="/accounting/">Open accounting</a>';
+  if(typeof pagesFetch==='function')root.querySelector('a').href='../accounting/';
+  root.querySelector('form').onsubmit=async e=>{
+   e.preventDefault();const field=e.target.elements.password;
+   try{
+    const res=await managementFetch('/api/accounts/password',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:field.value})});
+    const data=await res.json();if(!res.ok)throw Error(data.error||'Could not save password.');
+    field.value='';$('#manageStatus').textContent='Accounting password saved.';
+   }catch(err){$('#manageStatus').textContent=err.message}
+  };
+ }
+ if(managementTab==='bookings')renderBooking($('#manager'),true);
  if(managementTab==='games')manageGames();
  if(managementTab==='categories')manageCategories();
 }
@@ -108,12 +122,10 @@ function managementFetch(path,options){return typeof pagesFetch==='function'?pag
 function admin(){
  if(typeof pagesPanelAuth==='function'&&!settings?.admin){pagesPanelAuth();return}
  view.innerHTML='<a class="back" href="#library">Back to game library</a><h1>Manage library</h1>';
- if(!settings?.admin&&!settings?.githubVerified){
-  const error=new URLSearchParams(location.search).get('signin')==='failed';
-  view.insertAdjacentHTML('beforeend','<p>'+ (error?'GitHub sign-in was cancelled or could not verify the owner. Try again with Sahejadsumra.':'Sign in with the Sahejadsumra GitHub account, then enter your admin password.')+'</p><a class="primary button" target="_top" href="/api/admin/github/start">Sign in with GitHub</a>');
-  return;
- }
  if(!settings?.admin){
+  if(!['localhost','127.0.0.1'].includes(location.hostname)&&!settings?.githubVerified){
+   const link=document.createElement('a');link.className='primary button';link.href='/api/admin/github/start';link.textContent='Sign in with GitHub';view.append(link);return;
+  }
   view.insertAdjacentHTML('beforeend','<form id="unlock"><label>Admin password<input name="password" type="password" autocomplete="current-password" required autofocus></label><button class="primary">Unlock admin</button><p class="feedback" role="status"></p></form>');
   $('#unlock').onsubmit=async event=>{
    event.preventDefault();
@@ -121,7 +133,7 @@ function admin(){
    try{
     const result=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:form.elements.password.value})});
     form.elements.password.value='';
-    if(!result.ok){form.querySelector('.feedback').textContent=result.status===403?'Check the admin password. If your GitHub session expired, reload and sign in again.':'Password verification is unavailable. Try again shortly.';return}
+    if(!result.ok){form.querySelector('.feedback').textContent=result.status===403?'Check the admin password.':'Password verification is unavailable. Try again shortly.';return}
     await loadSettings();admin();
    }catch{form.querySelector('.feedback').textContent='Could not unlock pricing. Try again.'}finally{button.disabled=false}
   };return;

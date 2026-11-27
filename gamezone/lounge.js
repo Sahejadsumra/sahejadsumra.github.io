@@ -7,12 +7,13 @@ function deviceNames(game){
  const names=(settings?.devices||[]).filter(d=>game.devices?.includes(d.id)).map(d=>d.name);
  return names.join(', ')||'Ask at the lounge about devices';
 }
-function sessionCost(device,minutes,weekend){
+function sessionCost(device,minutes,weekend,players=1){
  const prefix=weekend?'weekend':'weekday';
  const hours=Math.floor(minutes/60),half=minutes%60===30;
  const hourly=device[prefix+'Hour'],extra=device[prefix+'Half'];
  if((hours&&hourly==null)||(half&&extra==null))return 'Ask at the lounge';
- return '₹'+(hours*(hourly??0)+(half?extra:0)).toLocaleString('en-IN');
+ const perPlayer=hours*(hourly??0)+(half?extra:0);
+ return '₹'+(perPlayer*players).toLocaleString('en-IN');
 }
 function durationLabel(minutes){
  const h=Math.floor(minutes/60);
@@ -39,7 +40,7 @@ function socialIcon(url){
 function renderLounge(){
  const devices=settings?.devices||[],offers=settings?.offers||[],social=settings?.social||[];
  const rates=$('#rates');
- rates.innerHTML='<div class="sectionhead"><h2>Station rates</h2></div><p>Prices are per station. Weekend rates apply all day Saturday and Sunday. Arrange your session at the lounge.</p>';
+ rates.innerHTML='<div class="sectionhead"><h2>Station rates</h2></div><p>Prices are per player for the selected station. Weekend rates apply all day Saturday and Sunday. Arrange your session at the lounge.</p>';
  for(const d of devices){
   const card=document.createElement('article');card.className='rateCard';
   card.innerHTML='<h3>'+esc(d.name)+' <small>'+d.stations+' station'+(d.stations===1?'':'s')+'</small></h3><label>Session length<select></select></label><div class="dayRates"><div>Monday–Friday<strong></strong></div><div>Saturday–Sunday<strong></strong></div></div>';

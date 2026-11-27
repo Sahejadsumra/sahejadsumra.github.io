@@ -44,8 +44,8 @@ function route(){
  const social=path==='social-hub';
  const socialLink=$('nav a[href="#social-hub"]');
  if(social) socialLink.setAttribute('aria-current','page'); else socialLink.removeAttribute('aria-current');
- const home=!social&&i<0&&(path!=='admin'||!!service);$('#home').hidden=!home;view.hidden=home;
- document.title='Prime Game Zone';if(social)renderSocialHub();else if(i>=0)details(i);else if(path==='admin'&&!service)admin();else{view.replaceChildren();library()}
+ const home=path!=='booking'&&!social&&i<0&&(path!=='admin'||!!service);$('#home').hidden=!home;view.hidden=home;
+ document.title='Prime Game Zone';if(path==='booking'){document.title='Booking | Prime Game Zone';renderBooking(view,false)}else if(social)renderSocialHub();else if(i>=0)details(i);else if(path==='admin'&&!service)admin();else{view.replaceChildren();library()}
  if(['library','rates','passes','offers','social'].includes(path))$('#'+path).scrollIntoView();else window.scrollTo(0,0);
 }
 async function loadSettings(){if(typeof pagesFetch==='function'){await pagesLoad();return}const res=await fetch(service?service+'/api/player-library':'/api/prices',{cache:'no-store',credentials:service?'omit':'same-origin'});if(!res.ok)throw Error();applyState(await res.json())}

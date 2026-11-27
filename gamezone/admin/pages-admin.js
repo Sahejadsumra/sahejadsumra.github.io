@@ -17,7 +17,7 @@ function pagesLock(){
  games.splice(0,games.length);admin();
 }
 async function pagesFetch(path,options={}){
- const endpoint=path==='/api/admin/images'?'images':'prices';
+ const endpoint=path==='/api/admin/images'?'images':path==='/api/accounts/password'?'accounting-password':'prices';
  const headers=new Headers(options.headers);
  headers.set('Authorization','Bearer '+authorization);
  const res=await fetch(pagesService+'/api/pages-admin/'+endpoint,{...options,headers,credentials:'omit',cache:'no-store'});
