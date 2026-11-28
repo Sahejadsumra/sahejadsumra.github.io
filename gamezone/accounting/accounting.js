@@ -45,12 +45,12 @@ function logTable(){
  const host=$('#sessions');host.replaceChildren();
  if(!records.length){host.textContent='No paid sessions recorded yet.';return}
  const table=document.createElement('table'),header=table.createTHead().insertRow(),body=table.createTBody();
- for(const text of ['Station','Start (IST)','Play time','Game','Paid','Method','Timer','Action']){
+ for(const text of ['Station','Start (IST)','Play time','Players','Game','Paid','Method','Timer','Action']){
   const th=document.createElement('th');th.textContent=text;header.append(th);
  }
  for(const r of records){
   const row=body.insertRow();
-  for(const val of [r.label,localTime(r.start),playTime(r.minutes*60000),r.game||'—',rupees(r.paise),r.method])row.insertCell().textContent=val;
+  for(const val of [r.label,localTime(r.start),playTime(r.minutes*60000),r.players??'—',r.game||'—',rupees(r.paise),r.method])row.insertCell().textContent=val;
   const timer=row.insertCell(),action=row.insertCell();
   if(r.cancelledAt){timer.textContent='Cancelled';continue}
   const button=document.createElement('button');button.textContent='Cancel session';
@@ -170,7 +170,7 @@ entry.onsubmit=async e=>{
  e.preventDefault();const button=entry.querySelector('button');button.disabled=true;
  try{
   const s=stations[Number(fields.station.value)];
-  await api('sessions',{id:requestId,device:s.device,station:s.station,start:sessionStart(),minutes:Number(fields.duration.value),gameId:fields.game.value,amount:fields.amount.value,method:fields.payment.value});
+  await api('sessions',{id:requestId,device:s.device,station:s.station,start:sessionStart(),players:Number(fields.players.value),minutes:Number(fields.duration.value),gameId:fields.game.value,amount:fields.amount.value,method:fields.payment.value});
   await refresh();entry.reset();requestId=crypto.randomUUID();resetStart();message('Session saved.');
  }catch(err){message(err.message)}finally{button.disabled=false}
 };
